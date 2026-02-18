@@ -50,10 +50,17 @@ class Bot(Client):
                     if force_sub_chat.username:
                         link = f"https://t.me/{force_sub_chat.username}"
                     else:
-                        link = force_sub_chat.invite_link
-                        if not link:
-                            await self.export_chat_invite_link(force_sub_chat_id)
-                            link = (await self.get_chat(force_sub_chat_id)).invite_link
+                        if JOIN_REQUEST_ENABLE:
+                            invite = await self.create_chat_invite_link(
+                                chat_id=force_sub_chat_id,
+                                creates_join_request=True
+                            )
+                            link = invite.invite_link
+                        else:
+                            link = force_sub_chat.invite_link
+                            if not link:
+                                await self.export_chat_invite_link(force_sub_chat_id)
+                                link = (await self.get_chat(force_sub_chat_id)).invite_link
 
                     if link:
                         self.force_sub_join_links[force_sub_chat_id] = link
