@@ -32,12 +32,29 @@ DB_NAME = os.environ.get("DATABASE_NAME", "filesharexbot")
 # force sub channel id, if you want enable force sub
 FORCE_SUB_CHANNEL = int(os.environ.get("FORCE_SUB_CHANNEL", "0"))
 
+def _parse_force_sub_chat(chat_ref: str):
+    chat_ref = chat_ref.strip()
+    if not chat_ref:
+        return None
+
+    if chat_ref.startswith("@"):
+        return chat_ref.lower()
+
+    chat_id = int(chat_ref)
+    if chat_id == 0:
+        return None
+    return chat_id
+
+
 # supports multiple force sub chats (space or comma separated)
 _force_sub_chats = os.environ.get("FORCE_SUB_CHANNELS", "").replace(",", " ").split()
 try:
-    FORCE_SUB_CHANNELS = [int(chat_id) for chat_id in _force_sub_chats if int(chat_id) != 0]
+    FORCE_SUB_CHANNELS = [
+        parsed_chat for parsed_chat in (_parse_force_sub_chat(chat_ref) for chat_ref in _force_sub_chats)
+        if parsed_chat is not None
+    ]
 except ValueError:
-    raise Exception("FORCE_SUB_CHANNELS must contain valid chat IDs.")
+    raise Exception("FORCE_SUB_CHANNELS must contain valid chat IDs or @usernames.")
 
 # backward compatibility with old single-chat variable
 if not FORCE_SUB_CHANNELS and FORCE_SUB_CHANNEL:
