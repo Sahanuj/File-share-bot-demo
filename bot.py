@@ -41,25 +41,33 @@ class Bot(Client):
         self.uptime = datetime.now()
 
         if FORCE_SUB_CHANNELS:
-            self.force_sub_invite_links = {}
+            self.force_sub_join_links = {}
             for force_sub_chat_id in FORCE_SUB_CHANNELS:
                 try:
-                    link = (await self.get_chat(force_sub_chat_id)).invite_link
-                    if not link:
-                        await self.export_chat_invite_link(force_sub_chat_id)
-                        link = (await self.get_chat(force_sub_chat_id)).invite_link
-                    self.force_sub_invite_links[force_sub_chat_id] = link
+                    force_sub_chat = await self.get_chat(force_sub_chat_id)
+                    link = None
+
+                    if force_sub_chat.username:
+                        link = f"https://t.me/{force_sub_chat.username}"
+                    else:
+                        link = force_sub_chat.invite_link
+                        if not link:
+                            await self.export_chat_invite_link(force_sub_chat_id)
+                            link = (await self.get_chat(force_sub_chat_id)).invite_link
+
+                    if link:
+                        self.force_sub_join_links[force_sub_chat_id] = link
                 except Exception as a:
                     self.LOGGER(__name__).warning(a)
-                    self.LOGGER(__name__).warning(f"Bot can't export invite link from Force Sub Chat: {force_sub_chat_id}")
+                    self.LOGGER(__name__).warning(f"Bot can't resolve join link from Force Sub Chat: {force_sub_chat_id}")
 
-            if not self.force_sub_invite_links:
-                self.LOGGER(__name__).warning("Bot can't export invite link from any Force Sub chats!")
-                self.LOGGER(__name__).warning("Please make sure bot is admin with Invite Users via Link permission in all ForceSub chats.")
+            if not self.force_sub_join_links:
+                self.LOGGER(__name__).warning("Bot can't resolve join link from any Force Sub chats!")
+                self.LOGGER(__name__).warning("Please make sure chats are public or bot is admin with Invite Users via Link permission in all ForceSub chats.")
                 self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/CodeXBotzSupport for support")
                 sys.exit()
 
-            self.invitelink = next(iter(self.force_sub_invite_links.values()))
+            self.invitelink = next(iter(self.force_sub_join_links.values()))
 
         try:
             db_channel = await self.get_chat(CHANNEL_ID)
