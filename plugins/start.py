@@ -8,7 +8,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, START_PIC, AUTO_DELETE_TIME, AUTO_DELETE_MSG, JOIN_REQUEST_ENABLE
+from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, START_PIC, AUTO_DELETE_TIME, AUTO_DELETE_MSG
 from helper_func import subscribed, decode, get_messages, delete_file, get_unsubscribed_chats
 from database.database import add_user, del_user, full_userbase, present_user
 
@@ -171,20 +171,7 @@ async def not_joined(client: Client, message: Message):
     buttons = []
 
     for index, chat_id in enumerate(pending_chat_ids, start=1):
-        button_url = None
-
-        if JOIN_REQUEST_ENABLE:
-            try:
-                invite = await client.create_chat_invite_link(
-                    chat_id=chat_id,
-                    creates_join_request=True
-                )
-                button_url = invite.invite_link
-            except Exception:
-                button_url = None
-
-        if not button_url:
-            button_url = getattr(client, "force_sub_invite_links", {}).get(chat_id)
+        button_url = getattr(client, "force_sub_join_links", {}).get(chat_id)
 
         if button_url:
             buttons.append([
