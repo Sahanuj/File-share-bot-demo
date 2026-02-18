@@ -6,7 +6,8 @@ import asyncio
 import logging 
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
-from config import FORCE_SUB_CHANNELS, ADMINS, AUTO_DELETE_TIME, AUTO_DEL_SUCCESS_MSG
+from config import FORCE_SUB_CHANNELS, ADMINS, AUTO_DELETE_TIME, AUTO_DEL_SUCCESS_MSG, JOIN_REQUEST_ENABLE
+from database.database import has_join_request
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait
 
@@ -29,9 +30,13 @@ async def get_unsubscribed_chats(client, user_id):
         try:
             member = await client.get_chat_member(chat_id=force_sub_chat_id, user_id=user_id)
         except UserNotParticipant:
+            if JOIN_REQUEST_ENABLE and await has_join_request(force_sub_chat_id, user_id):
+                continue
             unsubscribed_chat_ids.append(force_sub_chat_id)
             continue
         except Exception:
+            if JOIN_REQUEST_ENABLE and await has_join_request(force_sub_chat_id, user_id):
+                continue
             unsubscribed_chat_ids.append(force_sub_chat_id)
             continue
 
