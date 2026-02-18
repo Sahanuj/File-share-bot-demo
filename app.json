@@ -42,7 +42,7 @@
       "value": "0"
     },
     "FORCE_SUB_CHANNELS":{
-      "description": "Space/comma separated ForceSub channel/group IDs. Example: -10011111 -10022222",
+      "description": "Space/comma separated ForceSub chat IDs and/or public usernames. Example: -10011111 @mypublicchannel -10022222",
       "value": ""
     },
     "START_MESSAGE": {
@@ -92,4 +92,3 @@
     }
   }
 }
-
